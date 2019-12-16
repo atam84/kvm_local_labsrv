@@ -1,0 +1,25 @@
+---
+- name: debuging
+  debug:
+    msg: "{{ item.kickstart_dir|default(defaults.kickstart_dir) }}"
+  with_items:
+    - "{{ vms }}"
+
+- name: Create kickstart directories
+  file:
+    path: "{{ item.kickstart_dir|default(defaults.kickstart_dir) }}"
+    mode: '0755'
+    state: directory
+  with_items: 
+    - "{{ vms }}"
+
+- name: Generate kickstart file
+  vars:
+    current: "{{ item }}"
+    packages: "{{ item.packages|default(defaults.packages) }}"
+  template:
+    src: ks-centos8.cfg.j2
+    dest: "{{ item.kickstart_dir|default(defaults.kickstart_dir) }}/ks-{{ item.name }}-{{ item.os_variant|default(defaults.os_variant) }}.cfg"
+    mode: 0644
+  with_items: 
+    - "{{ vms }}"

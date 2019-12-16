@@ -1,0 +1,142 @@
+---
+# disk format: raw qcow2 qed qcow vmdk vdi vpc
+defaults:
+    ram: 4096
+    vcpu: 2
+    os_type: linux
+    os_variant: rhel8.0
+    network: 'bridge=virbr0'
+    graphics: none
+    console: 'pty,target_type=serial'
+    iso_location: "/data/osimages/centos/8/CentOS-8-x86_64-1905-dvd1.iso"
+    kickstart_dir: "/var/ftp/pub/centos/8/"
+    extra_args: 'console=ttyS0,115200n8 serial'
+    keyboard_layout: 'de'
+    lang: en_US.UTF-8
+    timezone: '--utc Africa/Casablanca'
+    rootpw: password
+    selinux: enforcing
+    firewall: disabled
+    packages:
+      - "@^minimal-environment"
+      - "@legacy-unix"
+      - "@standard"
+      - "@system-tools"
+      - "kexec-tools"
+
+vms:
+  - name: k8s-centos8-master01
+    hostname: k8s-centos8-master01
+    selinux: enforcing
+    firewall: disabled
+    users:
+      - user: atam84
+        password: password
+      - user: xenos
+        password: password
+    networking:
+      - device: ens2
+        bootproto: static
+        ipv6: false
+        ip: '192.168.122.21'
+        gateway: '192.168.122.1'
+        netmask: '255.255.255.0'
+        nameserver: '192.168.122.1,8.8.8.8'
+    os_disk:
+      dir: "/data/virtmachines/"
+      format: qcow2 
+      size: 20G
+      options: 'preallocation=metadata,lazy_refcounts=on'
+
+  - name: k8s-centos8-master02
+    hostname: k8s-centos8-master02
+    selinux: enforcing
+    firewall: disabled
+    users:
+      - user: atam84
+        password: password
+      - user: xenos
+        password: password
+    networking:
+      - device: ens2
+        bootproto: static
+        ipv6: false
+        ip: '192.168.122.22'
+        gateway: '192.168.122.1'
+        netmask: '255.255.255.0'
+        nameserver: '192.168.122.1,8.8.8.8'
+    os_disk:
+      dir: "/data/virtmachines/"
+      format: qcow2 
+      size: 20G
+      options: 'preallocation=metadata,lazy_refcounts=on'
+
+
+  - name: k8s-centos8-worker01
+    hostname: k8s-centos8-worker02
+    selinux: enforcing
+    firewall: disabled
+    users:
+      - user: atam84
+        password: password
+      - user: xenos
+        password: password
+    networking:
+      - device: ens2
+        bootproto: static
+        ipv6: false
+        ip: '192.168.122.31'
+        gateway: '192.168.122.1'
+        netmask: '255.255.255.0'
+        nameserver: '192.168.122.1,8.8.8.8'
+    os_disk:
+      dir: "/data/virtmachines/"
+      format: qcow2 
+      size: 20G
+      options: 'preallocation=metadata,lazy_refcounts=on'
+
+  - name: k8s-centos8-worker02
+    hostname: k8s-centos8-worker02
+    selinux: enforcing
+    firewall: disabled
+    users:
+      - user: atam84
+        password: password
+      - user: xenos
+        password: password
+    networking:
+      - device: ens2
+        bootproto: static
+        ipv6: false
+        ip: '192.168.122.32'
+        gateway: '192.168.122.1'
+        netmask: '255.255.255.0'
+        nameserver: '192.168.122.1,8.8.8.8'
+    os_disk:
+      dir: "/data/virtmachines/"
+      format: qcow2 
+      size: 20G
+      options: 'preallocation=metadata,lazy_refcounts=on'
+
+  - name: k8s-centos8-worker03
+    hostname: k8s-centos8-worker03
+    selinux: enforcing
+    firewall: disabled
+    users:
+      - user: atam84
+        password: password
+      - user: xenos
+        password: password
+    networking:
+      - device: ens2
+        bootproto: static
+        ipv6: false
+        ip: '192.168.122.33'
+        gateway: '192.168.122.1'
+        netmask: '255.255.255.0'
+        nameserver: '192.168.122.1,8.8.8.8'
+    os_disk:
+      dir: "/data/virtmachines/"
+      format: qcow2 
+      size: 20G
+      options: 'preallocation=metadata,lazy_refcounts=on'

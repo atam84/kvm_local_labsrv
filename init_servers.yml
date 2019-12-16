@@ -1,0 +1,14 @@
+---
+
+- name: Servers provision
+  hosts: all
+  remote_user: atam84
+  become: yes
+  gather_facts: yes
+  vars_files:
+    - vm_definition.yml
+  roles:
+    - kickstart-cfg
+    - qemu-img
+    - virt-install
+

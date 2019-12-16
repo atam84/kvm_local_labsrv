@@ -1,0 +1,33 @@
+---
+
+   # qemu-img create -f qcow2 -o preallocation=metadata,lazy_refcounts=on \
+   #                 /data/virtmachines/oso-server-01.qcow2 20G
+   # ansible-centos.qcow2  dns-server.qcow2
+- name: Check if os virtual disk(s) exist(s)
+  vars:
+    disk_image: "{{ item.os_disk.dir }}{{ item.hostname }}-os.{{ item.os_disk.format }}"
+  stat:
+    path: "{{ disk_image }}"
+    get_checksum: no
+  register: stat_result
+  with_items:
+    - "{{ vms }}"
+
+- name: Create disk(s) image(s)
+  vars:
+    disk_image: "{{ item.os_disk.dir }}{{ item.hostname }}-os.{{ item.os_disk.format }}"
+  shell: |
+    qemu-img create -f {{ item.os_disk.format }} -o {{ item.os_disk.options }} \
+             {{ disk_image }} {{ item.os_disk.size }}
+  register: qemu_result
+  #when: image_status[disk_image] == false
+  with_items:
+    - "{{ vms }}"
+
+- name: Create the file, if it doesnt exist already
+  debug:
+    msg: "{{ item.stdout }}"
+  ignore_errors: yes
+  with_items: 
+    - "{{ qemu_result.results }}"
+

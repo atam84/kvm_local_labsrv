@@ -1,0 +1,69 @@
+#
+# Environment setup
+#
+text
+cdrom
+auth --enableshadow --passalgo=sha512
+keyboard --vckeymap={{ current.keyboard_layout }} --xlayouts='{{ current.keyboard_layout }}'
+lang {{ current.lang}}
+eula --agreed
+reboot
+
+#
+# network configuration
+#
+{% for n in current.networking %}
+network --bootproto={{ n.bootproto }} --ip={{ n.ip }} --gateway={{ n.gateway }}  --netmask={{ n.netmask }}  --noipv6 --device={{ n.device }} --nameserver={{ n.nameserver }} --activate
+{% endfor %}
+network --hostname={{ current.hostname }}
+timezone {{ current.timezone }}
+
+
+#
+# partitioning
+#
+ignoredisk --only-use=vda
+bootloader --location=mbr --boot-drive=vda
+zerombr
+clearpart --none --initlabel
+autopart --type=lvm
+
+# 
+# User Accounts
+# Generate encrypted password: python -c 'import crypt; print(crypt.crypt("My Password"))'
+# Or  openssl passwd -1 password
+#
+rootpw {{ current.rootpw}} 
+{% for user in current.users %}
+user --name={{ user.user }} --password={{ user.password }} 
+{% endfor %}
+
+
+#
+# SELinux and Firewalld
+#
+selinux --{{ current.selinux}}
+firewall --{{ current.firewall }}
+
+mkdir -m0700 /home/atam84/.ssh/
+ssh-rsa AAAAB2NzaC1yc2EAAAADAQABAAABAQCufxRtE20qYipiOHG9bLihfyvEqB53OyLAcintuN1Gnz4FQPQa3XRokIhEbKW5/rUvHACeEXckywh88r/aKkOA4DZA32Qp1Ujrmt6BavxhMTxmUxiv9yZ7ODaKL+WnfEpWmyNd3JITwR91wJ51wC2nY4p0Ex9YMoQ9vUPCMKhdFJKqB4wEkVK/OdLboIHtquYgBagJEsD4+3qweGuNrYKbTyf3vIioDIl+Jj6qLCQ5pxCXiT3xEQKe8buXinXCS07noOP/OhA8AczxaRcbVdH7Q3S5nqMffsLzd4lsaMkiKv7BlaZD/WsmdQpCCsuT3Ul/n3WWkLLHUDvNPOrMzTAj atam84@deb-node
+cat <<EOF >/home/atam84/.ssh/authorized_keys
+
+EOF
+
+### set permissions
+chown atam84.atam84 -R /home/atam84/.ssh/
+chmod 0600 /home/atam84/.ssh/authorized_keys
+
+### fix up selinux context
+#restorecon -R /root/.ssh/
+
+# Software Packages
+#
+%packages --nobase --ignoremissing
+{% for pkg in packages %}
+{{ pkg }}
+{% endfor %}
+
+%end
+

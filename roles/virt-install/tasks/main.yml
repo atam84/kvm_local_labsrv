@@ -1,0 +1,34 @@
+---
+
+# virt-install --name oso-server-01 --ram 8192 \
+#    --disk path=/data/virtmachines/oso-server-01.qcow2  \
+#    --vcpus 2 --os-type linux --os-variant centos7.0 \
+#    --network bridge=virbr0 --graphics none \
+#    --console pty,target_type=serial \
+#    --location '/data/osimages/centos/7/CentOS-7-x86_64-Minimal-1810.iso' \
+#    --initrd-inject /var/ftp/pub/centos/ks-centos-oso-server-01.cfg \
+#    --extra-args 'ks=file:/ks-centos-oso-server-01.cfg console=ttyS0,115200n8 serial'
+
+- name: Install servers
+  vars:
+    disk_image: "{{ item.os_disk.dir }}{{ item.hostname }}-os.{{ item.os_disk.format }}"
+    ks_filename: "ks-{{ item.name }}-{{ item.os_variant|default(defaults.os_variant|default('centos7.0')) }}.cfg"
+    ks_path: "{{ item.kickstart_dir|default(defaults.kickstart_dir) }}"
+  shell: |
+    virt-install --name {{ item.name }} \
+               --ram {{ item.ram|default(defaults.ram|default('1024')) }} \
+               --disk path={{ disk_image }} \
+               --vcpus {{ item.vcpu|default(defaults.vcpu|default('1')) }} \
+               --os-type {{ item.os_type|default(defaults.os_type|default('linux')) }} \
+               --os-variant {{ item.os_variant|default(defaults.os_variant|default('centos7.0')) }} \
+               --network {{ item.network|default(defaults.network|default('bridge=virbr0')) }} \
+               --graphics {{ item.graphics|default(defaults.graphics|default('none')) }} \
+               --console {{ item.console|default(defaults.console|default('console=ttyS0,115200n8 serial')) }} \
+               --location '{{ item.iso_location|default(defaults.iso_location) }}' \
+               --initrd-inject {{ ks_path }}{{ ks_filename }} \
+               --extra-args 'ks=file:/{{ ks_filename }} console=ttyS0,115200n8 serial' \
+               --noautoconsole
+               #--quiet \
+  with_items:
+    - "{{ vms }}"
+

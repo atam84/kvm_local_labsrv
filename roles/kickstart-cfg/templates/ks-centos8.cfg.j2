@@ -1,0 +1,58 @@
+#version=RHEL8
+ignoredisk --only-use=sda
+# System bootloader configuration
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
+autopart --type=lvm
+# Partition clearing information
+clearpart --all --initlabel --drives=sda
+# Use text mode install
+text
+repo --name="AppStream" --baseurl=file:///run/install/repo/AppStream
+# Use CDROM installation media
+cdrom
+# Keyboard layouts
+keyboard --vckeymap={{ current.keyboard_layout|default(defaults.keyboard_layout) }} --xlayouts=''
+# System language
+lang {{ current.lang|default(defaults.lang) }}
+
+# Network information
+#network  --bootproto=static --device=ens2 --gateway=192.168.122.1 --ip=192.168.122.31 --nameserver=192.168.122.1,8.8.8.8 --netmask=255.255.255.0 --noipv6 --activate
+{% for n in current.networking %}
+network --bootproto={{ n.bootproto }} --ip={{ n.ip }} --gateway={{ n.gateway }}  --netmask={{ n.netmask }}  --noipv6 --device={{ n.device }} --nameserver={{ n.nameserver }} --activate
+{% endfor %}
+network  --hostname={{ current.hostname }}
+# Root password
+rootpw --iscrypted $6$rem332NcWUveXVjw$g7C6zi3DcTJDlPjc5gfEJD7U9L76Ju0FXfcNxz2GnB39/iY6HAvxqhpLVIn2.H1y6agvwe/GK3aAgs/NvjpOx/
+# Run the Setup Agent on first boot
+firstboot --enable
+# Do not configure the X Window System
+skipx
+# System services
+services --enabled="chronyd"
+# System timezone
+timezone {{ current.timezone|default(defaults.timezone) }}
+#user --groups=wheel --name=xenos --password=$6$yuATUDUsnlSvqNHm$mf35kRxUT9IC3AtxN0zluGDGtqPghCrRCLy8FxXZtTBEC9f8sf4phdkFhhVp3m7lrAXBa4/ATHRtbeaY8tIOZ. --iscrypted --gecos="xenos"
+{% for user in current.users %}
+user -groups=wheel --name={{ user.user }} --password={{ user.password }} 
+{% endfor %}
+
+# SELinux and Firewalld
+selinux --{{ current.selinux}}
+firewall --{{ current.firewall }}
+
+%packages
+{% for pkg in packages %}
+{{ pkg }}
+{% endfor %}
+
+%end
+
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+
+%end
+
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
